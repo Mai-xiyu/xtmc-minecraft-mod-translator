@@ -5,10 +5,14 @@
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
 ![Python](https://img.shields.io/badge/python-3.13-green)
 ![Vue](https://img.shields.io/badge/vue-3.5-brightgreen)
+![Docker](https://img.shields.io/badge/docker-ready-brightgreen)
+[![Docker Hub](https://img.shields.io/docker/pulls/maixiyu/xtmc-translate)](https://hub.docker.com/r/maixiyu/xtmc-translate)
 
 **专业的 Minecraft 模组翻译工具，支持语言文件和字节码翻译**
 
 Created by **Mai_xiyu** and **Gemini3**
+
+[English](README.md) | [Docker 部署](DOCKER.md)
 
 </div>
 
@@ -42,7 +46,25 @@ Created by **Mai_xiyu** and **Gemini3**
 
 ## 📦 快速开始
 
-### 一键启动
+### 🐳 Docker 部署 (推荐)
+
+**最简单的方式,一键启动:**
+
+```bash
+docker run -d \
+  --name xtmc-translate \
+  -p 8000:8000 \
+  -p 8080:8080 \
+  -v $(pwd)/uploads:/app/uploads \
+  -v $(pwd)/outputs:/app/outputs \
+  maixiyu/xtmc-translate:latest
+```
+
+访问: http://localhost:8080
+
+详细 Docker 部署说明见 [DOCKER.md](DOCKER.md)
+
+### 📜 脚本启动
 
 ```bash
 ./start.sh
