@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XTMC Translate - Minecraft Mod Translation Tool | AI-Powered Language & Bytecode Translator</title>
+    <meta name="description" content="Free online Minecraft mod translator using AI. Translate .json, .lang files and JAR bytecode. Supports DeepSeek, OpenAI, Claude, and Gemini. Smart token management for large files.">
+    <meta name="keywords" content="Minecraft翻译, Minecraft mod translator, 我的世界翻译, JAR翻译, 模组翻译, lang文件翻译, json翻译, Minecraft汉化, mod汉化, 字节码翻译, AI翻译, DeepSeek, OpenAI, Claude, Gemini, Minecraft localization, mod translation, resourcepack translation, XTMC, 游戏翻译, game translation">
+    <meta name="author" content="XTMC">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="XTMC Translate - Minecraft Mod Translation Tool">
+    <meta property="og:description" content="AI-powered Minecraft mod translator. Translate language files and JAR bytecode with smart token management.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.xtmc.xyz">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Crect width='8' height='8' fill='%2364AA53'/%3E%3Crect x='1' y='2' width='2' height='2' fill='black'/%3E%3Crect x='5' y='2' width='2' height='2' fill='black'/%3E%3Crect x='3' y='4' width='2' height='1' fill='black'/%3E%3Crect x='2' y='5' width='4' height='1' fill='black'/%3E%3Crect x='2' y='6' width='1' height='1' fill='black'/%3E%3Crect x='5' y='6' width='1' height='1' fill='black'/%3E%3C/svg%3E" type="image/svg+xml">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="./lib/tailwindcss.js"></script>
+    <script src="./lib/vue.js"></script>
+    <script src="./lib/vue-router.js"></script>
+    <script src="./lib/i18next.js"></script>
+    <script src="./lib/i18next-vue.js"></script>
+    <script src="./lib/jszip.js"></script>
+    <script src="./lib/FileSaver.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            black: '#0a0a0a',
+                            dark: '#121212',
+                            primary: '#00f3ff',
+                            secondary: '#bc13fe',
+                            accent: '#fcee0a'
+                        }
+                    },
+                    fontFamily: {
+                        mono: ['Courier New', 'monospace'],
+                        pixel: ['"Press Start 2P"', 'cursive'],
+                        tech: ['"Rajdhani"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Cursors */
+        body {
+            background-color: #050505;
+            color: #e0e0e0;
+            font-family: 'Rajdhani', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            cursor: url('data:image/svg+xml;utf8,<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 2V16L6 12L9 18L11 17L8 11L13 11L2 2Z" fill="%2300f3ff" stroke="black" stroke-width="1"/></svg>'), auto;
+        }
+        
+        a, button, select, input, .cursor-pointer {
+            cursor: url('data:image/svg+xml;utf8,<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 2V12H5V15H2V18H5V21H8V24H11V21H14V18H17V15H20V12H17V9H14V6H11V2H8Z" fill="%23bc13fe" stroke="black" stroke-width="1"/></svg>'), pointer !important;
+        }
+
+        /* Background Grid Animation */
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -2;
+            perspective: 500px;
+            transform-style: preserve-3d;
+            animation: grid-move 20s linear infinite;
+        }
+
+        @keyframes grid-move {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(50px); }
+        }
+
+        /* Scanlines */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.2) 50%,
+                rgba(0,0,0,0.2)
+            );
+            background-size: 100% 4px;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        .cyber-border {
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 5px #00f3ff;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Corner decorations */
+        .cyber-border::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 10px;
+            height: 10px;
+            border-top: 2px solid #00f3ff;
+            border-left: 2px solid #00f3ff;
+        }
+        .cyber-border::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 10px;
+            height: 10px;
+            border-bottom: 2px solid #00f3ff;
+            border-right: 2px solid #00f3ff;
+        }
+
+        .cyber-text {
+            text-shadow: 0 0 5px #00f3ff;
+            font-family: 'Press Start 2P', cursive;
+        }
+        
+        .cyber-btn {
+            background: rgba(0, 243, 255, 0.1);
+            border: 1px solid #00f3ff;
+            color: #00f3ff;
+            transition: all 0.2s;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cyber-btn:hover {
+            background: #00f3ff;
+            color: #000;
+            box-shadow: 0 0 15px #00f3ff;
+            transform: translateY(-2px);
+        }
+
+        .cyber-btn:active {
+            transform: translateY(0);
+        }
+
+        .glitch {
+            position: relative;
+            font-family: 'Press Start 2P', cursive;
+        }
+        
+        .glitch::before, .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .glitch::before {
+            left: 2px;
+            text-shadow: -1px 0 #ff00c1;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim 5s infinite linear alternate-reverse;
+        }
+        
+        .glitch::after {
+            left: -2px;
+            text-shadow: -1px 0 #00fff9;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim2 5s infinite linear alternate-reverse;
+        }
+        
+        @keyframes glitch-anim {
+            0% { clip: rect(10px, 9999px, 30px, 0); }
+            20% { clip: rect(80px, 9999px, 100px, 0); }
+            40% { clip: rect(40px, 9999px, 60px, 0); }
+            60% { clip: rect(20px, 9999px, 40px, 0); }
+            80% { clip: rect(60px, 9999px, 80px, 0); }
+            100% { clip: rect(90px, 9999px, 110px, 0); }
+        }
+        
+        @keyframes glitch-anim2 {
+            0% { clip: rect(60px, 9999px, 80px, 0); }
+            20% { clip: rect(20px, 9999px, 40px, 0); }
+            40% { clip: rect(90px, 9999px, 110px, 0); }
+            60% { clip: rect(10px, 9999px, 30px, 0); }
+            80% { clip: rect(40px, 9999px, 60px, 0); }
+            100% { clip: rect(80px, 9999px, 100px, 0); }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            background: #0a0a0a;
+        }
+        ::-webkit-scrollbar-track {
+            background: #121212; 
+            border-left: 1px solid #333;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #00f3ff; 
+            border: 2px solid #121212;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #bc13fe;
+        }
+        
+        /* Selection */
+        ::selection {
+            background: #00f3ff;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="scanlines"></div>
+    <div id="app" class="min-h-screen flex flex-col relative z-10">
+        <!-- Navbar -->
+        <nav class="border-b border-cyber-primary/30 bg-cyber-dark/90 backdrop-blur-md p-4 sticky top-0 z-50">
+            <div class="container mx-auto flex justify-between items-center">
+                <div class="text-2xl font-bold text-cyber-primary tracking-widest glitch" data-text="XTMCTRANS">XTMC<span class="text-white">TRANS</span></div>
+                <div class="space-x-6 hidden md:flex font-tech tracking-wider">
+                    <router-link to="/" class="hover:text-cyber-primary transition hover:scale-110 transform duration-200">{{ $t('nav.home') }}</router-link>
+                    <router-link to="/sponsor" class="hover:text-cyber-primary transition hover:scale-110 transform duration-200">{{ $t('nav.sponsor') }}</router-link>
+                    <router-link to="/lang-translate" class="hover:text-cyber-primary transition hover:scale-110 transform duration-200">{{ $t('nav.lang') }}</router-link>
+                    <router-link to="/bytecode-translate" class="hover:text-cyber-primary transition hover:scale-110 transform duration-200">{{ $t('nav.bytecode') }}</router-link>
+                    <router-link to="/stats" class="hover:text-cyber-primary transition hover:scale-110 transform duration-200">{{ $t('nav.stats') }}</router-link>
+                </div>
+                <div>
+                    <select v-model="currentLang" @change="changeLang" class="bg-black border border-cyber-primary text-cyber-primary px-2 py-1 rounded font-mono text-sm hover:bg-cyber-primary hover:text-black transition cursor-pointer">
+                        <option value="zh">中文</option>
+                        <option value="en">English</option>
+                        <option value="de">Deutsch</option>
+                        <option value="es">Español</option>
+                        <option value="ru">Русский</option>
+                        <option value="pt">Português</option>
+                    </select>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Content -->
+        <main class="flex-grow container mx-auto p-4 mt-4">
+            <router-view></router-view>
+        </main>
+
+        <!-- Footer -->
+        <footer class="border-t border-cyber-primary/30 p-6 text-center text-gray-500 text-sm mt-8">
+            <p>Created by <span class="text-cyber-primary">Mai_xiyu</span> & <span class="text-cyber-secondary">Gemini3</span></p>
+            <p class="mt-2">© 2025 XTMC Translate. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script type="module" src="./main.js"></script>
+</body>
+</html>

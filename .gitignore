@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+backend/venv/
+backend/.env
+
+# Logs
+*.log
+frontend.log
+backend.log
+
+# Uploads and outputs
+uploads/*
+outputs/*
+!uploads/.gitkeep
+!outputs/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Temporary files
+*.tmp
+*.bak
+.cache/
+
+# Stats
+stats.json
