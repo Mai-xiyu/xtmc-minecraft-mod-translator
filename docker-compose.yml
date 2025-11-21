@@ -1,0 +1,24 @@
+# Docker Compose for XTMC Translate
+version: '3.8'
+
+services:
+  xtmc-translate:
+    build: .
+    image: ${DOCKER_USERNAME}/xtmc-translate:latest
+    container_name: xtmc-translate
+    ports:
+      - "8000:8000"  # Backend API
+      - "8080:8080"  # Frontend
+    volumes:
+      - ./uploads:/app/uploads
+      - ./outputs:/app/outputs
+      - ./stats.json:/app/stats.json
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000').read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
