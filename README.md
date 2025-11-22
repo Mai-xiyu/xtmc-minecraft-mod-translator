@@ -162,12 +162,6 @@ docker run -d \
 
 ---
 
-## 📚 详细文档
-
-- [字节码翻译指南](BYTECODE_TRANSLATION_GUIDE.md)
-- [JAR 支持说明](JAR_SUPPORT.md)
-- [功能实现报告](IMPLEMENTATION_COMPLETE.md)
-
 ## 💖 赞助支持
 
 如果这个项目对您有帮助，欢迎赞助！
