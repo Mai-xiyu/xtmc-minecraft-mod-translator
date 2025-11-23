@@ -7,6 +7,7 @@
 ![Vue](https://img.shields.io/badge/vue-3.5-brightgreen)
 ![Docker](https://img.shields.io/badge/docker-ready-brightgreen)
 [![Docker Hub](https://img.shields.io/docker/pulls/maixiyu/xtmc-translate)](https://hub.docker.com/r/maixiyu/xtmc-translate)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-trans.xtmc.xyz-00f3ff)](https://trans.xtmc.xyz)
 
 **专业的 Minecraft 模组翻译工具，支持语言文件和字节码翻译**
 
