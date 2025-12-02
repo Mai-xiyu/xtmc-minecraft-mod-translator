@@ -36,15 +36,33 @@ docker run -d \
 # API会自动通过 http://localhost:8080/api 访问（内部代理）
 ```
 
-### 使用 Docker Compose
+### 使用 Docker Compose (推荐)
+
+**方式一：直接使用（推荐）**
+
+```bash
+# 创建工作目录
+mkdir -p xtmc-translate && cd xtmc-translate
+
+# 下载 docker-compose.yml
+curl -O https://raw.githubusercontent.com/Mai-xiyu/xtmc-minecraft-mod-translator/main/docker-compose.yml
+
+# 启动服务
+docker-compose up -d
+
+# 查看日志
+docker-compose logs -f
+
+# 停止服务
+docker-compose down
+```
+
+**方式二：克隆仓库**
 
 ```bash
 # 克隆仓库
 git clone https://github.com/Mai-xiyu/xtmc-minecraft-mod-translator.git
 cd xtmc-minecraft-mod-translator
-
-# 设置 Docker Hub 用户名
-export DOCKER_USERNAME=yourusername
 
 # 启动服务
 docker-compose up -d
