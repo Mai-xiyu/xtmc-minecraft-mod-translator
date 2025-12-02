@@ -62,8 +62,8 @@ docker-compose down
 # 构建镜像
 docker build -t xtmc-translate .
 
-# 运行
-docker run -d -p 8000:8000 -p 8080:8080 xtmc-translate
+# 运行（只需映射8080端口）
+docker run -d -p 8080:8080 xtmc-translate
 ```
 
 ## 环境要求
@@ -73,8 +73,8 @@ docker run -d -p 8000:8000 -p 8080:8080 xtmc-translate
 
 ## 端口说明
 
-- **8000**: 后端 API 服务
-- **8080**: 前端 Web 界面
+- **8080**: 前端 Web 界面 + API代理（通过Nginx）
+- **8000**: 后端服务（仅容器内部，不对外暴露）
 
 ## 数据持久化
 
@@ -88,6 +88,36 @@ docker run -d -p 8000:8000 -p 8080:8080 xtmc-translate
 容器内置健康检查,每 30 秒检查一次后端服务状态。
 
 ## 故障排除
+
+### 503 Service Unavailable 错误
+
+如果遇到503错误，说明Nginx无法连接到后端服务：
+
+1. **检查容器日志**
+```bash
+docker logs xtmc-translate
+```
+
+2. **检查后端服务是否运行**
+```bash
+docker exec xtmc-translate ps aux | grep python
+```
+
+3. **检查后端端口是否监听**
+```bash
+docker exec xtmc-translate netstat -tlnp | grep 8000
+```
+
+4. **查看Nginx错误日志**
+```bash
+docker exec xtmc-translate cat /var/log/nginx/error.log
+```
+
+5. **查看Supervisor日志**
+```bash
+docker exec xtmc-translate cat /var/log/supervisor/backend.out.log
+docker exec xtmc-translate cat /var/log/supervisor/backend.err.log
+```
 
 ### 查看容器日志
 ```bash
@@ -104,16 +134,41 @@ docker exec -it xtmc-translate bash
 docker restart xtmc-translate
 ```
 
+### 完全重新部署
+```bash
+# 停止并删除旧容器
+docker stop xtmc-translate
+docker rm xtmc-translate
+
+# 拉取最新镜像
+docker pull maixiyu/xtmc-translate:latest
+
+# 重新启动
+docker run -d \
+  --name xtmc-translate \
+  -p 8080:8080 \
+  -v $(pwd)/uploads:/app/uploads \
+  -v $(pwd)/outputs:/app/outputs \
+  -v $(pwd)/stats.json:/app/stats.json \
+  maixiyu/xtmc-translate:latest
+```
+
 ## 更新镜像
 
 ```bash
 # 拉取最新镜像
-docker pull yourusername/xtmc-translate:latest
+docker pull maixiyu/xtmc-translate:latest
 
 # 停止并删除旧容器
 docker stop xtmc-translate
 docker rm xtmc-translate
 
 # 使用新镜像启动
-docker run -d --name xtmc-translate -p 8000:8000 -p 8080:8080 yourusername/xtmc-translate:latest
+docker run -d \
+  --name xtmc-translate \
+  -p 8080:8080 \
+  -v $(pwd)/uploads:/app/uploads \
+  -v $(pwd)/outputs:/app/outputs \
+  -v $(pwd)/stats.json:/app/stats.json \
+  maixiyu/xtmc-translate:latest
 ```

@@ -18,6 +18,8 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     gcc \
     nginx \
+    curl \
+    supervisor \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy backend requirements and install Python dependencies
@@ -28,11 +30,12 @@ RUN pip install --no-cache-dir -r backend/requirements.txt
 COPY backend/ ./backend/
 COPY frontend/ ./frontend/
 COPY nginx.conf /etc/nginx/nginx.conf
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY start.sh stop.sh ./
 COPY README.md ./
 
 # Create necessary directories
-RUN mkdir -p uploads outputs /var/log/nginx && \
+RUN mkdir -p uploads outputs /var/log/nginx /var/log/supervisor && \
     chmod +x start.sh stop.sh
 
 # Expose only frontend port (Nginx will proxy to backend internally)
@@ -49,4 +52,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8080/ || exit 1
 
 # Start command: Run backend and nginx
-CMD ["bash", "-c", "python backend/main.py & nginx -g 'daemon off;'"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
