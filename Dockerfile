@@ -31,12 +31,13 @@ COPY backend/ ./backend/
 COPY frontend/ ./frontend/
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker-entrypoint.sh /usr/local/bin/
 COPY start.sh stop.sh ./
 COPY README.md ./
 
-# Create necessary directories
+# Create necessary directories and set permissions
 RUN mkdir -p uploads outputs /var/log/nginx /var/log/supervisor && \
-    chmod +x start.sh stop.sh
+    chmod +x start.sh stop.sh /usr/local/bin/docker-entrypoint.sh
 
 # Expose only frontend port (Nginx will proxy to backend internally)
 EXPOSE 8080
@@ -48,8 +49,8 @@ ENV BACKEND_PORT=8000
 ENV FRONTEND_PORT=8080
 
 # Health check on frontend port only
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:8080/ || exit 1
 
-# Start command: Run backend and nginx
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Start command: Use entrypoint script
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

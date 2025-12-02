@@ -89,6 +89,36 @@ docker run -d -p 8080:8080 xtmc-translate
 
 ## 故障排除
 
+### 502 Bad Gateway 错误
+
+如果遇到502错误，说明Nginx能连接后端但后端响应异常：
+
+1. **查看后端日志（最重要）**
+```bash
+docker exec xtmc-translate tail -f /var/log/supervisor/backend.out.log
+docker exec xtmc-translate tail -f /var/log/supervisor/backend.err.log
+```
+
+2. **检查后端是否正常运行**
+```bash
+# 检查进程
+docker exec xtmc-translate supervisorctl status
+
+# 测试后端API
+docker exec xtmc-translate curl http://127.0.0.1:8000/
+```
+
+3. **手动重启后端服务**
+```bash
+docker exec xtmc-translate supervisorctl restart backend
+docker exec xtmc-translate supervisorctl restart nginx
+```
+
+4. **查看完整容器日志**
+```bash
+docker logs xtmc-translate --tail 100
+```
+
 ### 503 Service Unavailable 错误
 
 如果遇到503错误，说明Nginx无法连接到后端服务：
