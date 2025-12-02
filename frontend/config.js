@@ -1,4 +1,4 @@
 // Configuration
-// Change this to 'https://ban.xtmc.xyz/Translate' for production if the backend is hosted there.
-// For local development, keep it as 'http://localhost:8000'.
-export const API_BASE = 'http://localhost:8000';
+// Use relative path for API calls, will be proxied by the same server
+// This allows frontend and backend to communicate without exposing backend port
+export const API_BASE = '/api';

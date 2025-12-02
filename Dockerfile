@@ -7,16 +7,17 @@ COPY frontend/package*.json ./
 RUN npm install
 COPY frontend/ ./
 
-# Stage 2: Final image
+# Stage 2: Final image with Nginx
 FROM python:3.13-slim
 
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies including Nginx
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     gcc \
+    nginx \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy backend requirements and install Python dependencies
@@ -26,22 +27,26 @@ RUN pip install --no-cache-dir -r backend/requirements.txt
 # Copy application files
 COPY backend/ ./backend/
 COPY frontend/ ./frontend/
+COPY nginx.conf /etc/nginx/nginx.conf
 COPY start.sh stop.sh ./
 COPY README.md ./
 
 # Create necessary directories
-RUN mkdir -p uploads outputs && \
+RUN mkdir -p uploads outputs /var/log/nginx && \
     chmod +x start.sh stop.sh
 
-# Expose ports
-EXPOSE 8000 8080
+# Expose only frontend port (Nginx will proxy to backend internally)
+EXPOSE 8080
 
 # Environment variables
 ENV PYTHONUNBUFFERED=1
+ENV BACKEND_HOST=127.0.0.1
+ENV BACKEND_PORT=8000
+ENV FRONTEND_PORT=8080
 
-# Health check
+# Health check on frontend port only
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000').read()" || exit 1
+    CMD curl -f http://localhost:8080/ || exit 1
 
-# Start command
-CMD ["bash", "-c", "python backend/main.py & cd frontend && python -m http.server 8080 --bind 0.0.0.0"]
+# Start command: Run backend and nginx
+CMD ["bash", "-c", "python backend/main.py & nginx -g 'daemon off;'"]

@@ -1,26 +1,39 @@
 # XTMC Translate Docker 部署指南
 
+## ⚠️ 架构说明
+
+**新架构：Nginx 反向代理**
+
+- ✅ **只暴露8080端口**：前端和API都通过同一端口访问
+- 🔒 **后端不暴露**：后端在容器内部运行，通过Nginx代理访问
+- 🚀 **更安全**：后端API不直接暴露到宿主机网络
+
+**工作原理：**
+1. 用户访问 `http://localhost:8080` → Nginx
+2. 静态文件请求 `/` → Nginx直接返回前端文件
+3. API请求 `/api/*` → Nginx代理到内部后端 `http://127.0.0.1:8000`
+4. 前端配置 `API_BASE = '/api'` 使用相对路径
+
 ## 快速开始
 
 ### 使用 Docker Hub 镜像
 
 ```bash
 # 拉取镜像
-docker pull yourusername/xtmc-translate:latest
+docker pull maixiyu/xtmc-translate:latest
 
-# 运行容器
+# 运行容器（只需映射8080端口）
 docker run -d \
   --name xtmc-translate \
-  -p 8000:8000 \
   -p 8080:8080 \
   -v $(pwd)/uploads:/app/uploads \
   -v $(pwd)/outputs:/app/outputs \
   -v $(pwd)/stats.json:/app/stats.json \
-  yourusername/xtmc-translate:latest
+  maixiyu/xtmc-translate:latest
 
 # 访问应用
 # 前端: http://localhost:8080
-# 后端: http://localhost:8000
+# API会自动通过 http://localhost:8080/api 访问（内部代理）
 ```
 
 ### 使用 Docker Compose

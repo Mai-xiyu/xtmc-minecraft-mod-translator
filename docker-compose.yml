@@ -7,8 +7,7 @@ services:
     image: ${DOCKER_USERNAME}/xtmc-translate:latest
     container_name: xtmc-translate
     ports:
-      - "8000:8000"  # Backend API
-      - "8080:8080"  # Frontend
+      - "8080:8080"  # Only expose frontend (Nginx proxies to backend internally)
     volumes:
       - ./uploads:/app/uploads
       - ./outputs:/app/outputs
@@ -17,7 +16,7 @@ services:
       - PYTHONUNBUFFERED=1
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000').read()"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
       interval: 30s
       timeout: 10s
       retries: 3
