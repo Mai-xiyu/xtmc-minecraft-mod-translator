@@ -32,12 +32,13 @@ COPY frontend/ ./frontend/
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker-entrypoint.sh /usr/local/bin/
+COPY healthcheck.sh /usr/local/bin/
 COPY start.sh stop.sh ./
 COPY README.md ./
 
 # Create necessary directories and set permissions
-RUN mkdir -p uploads outputs /var/log/nginx /var/log/supervisor && \
-    chmod +x start.sh stop.sh /usr/local/bin/docker-entrypoint.sh
+RUN mkdir -p uploads outputs /var/log/nginx /var/log/supervisor /var/run && \
+    chmod +x start.sh stop.sh /usr/local/bin/docker-entrypoint.sh /usr/local/bin/healthcheck.sh
 
 # Expose only frontend port (Nginx will proxy to backend internally)
 EXPOSE 8080
@@ -49,8 +50,8 @@ ENV BACKEND_PORT=8000
 ENV FRONTEND_PORT=8080
 
 # Health check on frontend port only
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:8080/ || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+    CMD /usr/local/bin/healthcheck.sh || exit 1
 
 # Start command: Use entrypoint script
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
